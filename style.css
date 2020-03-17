@@ -1,0 +1,10 @@
+body {
+    text-align: center;
+    background:black;
+    color:white;
+}
+
+.cen {
+    display: grid;
+    justify-items: center;
+}

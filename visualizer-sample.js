@@ -15,11 +15,10 @@
  */
 
 var WIDTH = 1000;
-var HEIGHT = 360;
-
+var HEIGHT = 700;
 // Interesting parameters to tweak!
-var SMOOTHING = 0.9;
-var FFT_SIZE = 2048;
+var SMOOTHING = 0.6;
+var FFT_SIZE = 1024;
 
 function VisualizerSample() {
   this.analyser = context.createAnalyser();
@@ -95,21 +94,37 @@ VisualizerSample.prototype.draw = function() {
   var drawContext = canvas.getContext("2d");
   canvas.width = window.innerWidth;
   canvas.height = HEIGHT;
-  drawContext.fillStyle='black';
+  drawContext.fillStyle = "black";
   drawContext.fillRect(0, 0, canvas.width, canvas.height);
   // Draw the frequency domain chart.
-  for (var i = 0; i < this.analyser.frequencyBinCount; i++) {
-  
-    if (i%2==0) {
-      var value = this.freqs[i];
-      var percent = value / 256;
-      var height = HEIGHT * percent;
-      var offset = HEIGHT - height - 1;
-      var barWidth = 3;
-      var hue = (i / this.analyser.frequencyBinCount) * 360;
-      drawContext.fillStyle = "hsl(" + hue + ", 100%, 60%)";
-      drawContext.fillRect(i * barWidth, offset, barWidth, height);
-    }
+  var j = 0;
+  for (
+    var i = 0;
+    i < this.analyser.frequencyBinCount;
+    i = Math.floor(i + this.analyser.frequencyBinCount / 50)
+  ) {
+    var value = this.freqs[i];
+    var percent = value / 256;
+    var height = ((HEIGHT * percent) % 50) + 150;
+    var offset = HEIGHT - height - 1;
+    var barWidth = 3;
+    var hue = (i / this.analyser.frequencyBinCount) * 360;
+
+    console.log(hue);
+    //    drawContext.fillStyle = "hsl(" + hue + ", 100%, 60%)";
+    //   drawContext.fillRect(i * barWidth, offset, barWidth, height);
+
+    var angleStep = (Math.PI * 2) / 50;
+    drawContext.fillStyle = "red";
+    var line = getLine(250, 250, (0 + j * Math.PI * 2) / 50, 1, height, 100);
+
+    drawContext.beginPath();
+    drawContext.moveTo(line.x1, line.y1); // add line to path
+    drawContext.lineTo(line.x2, line.y2);
+    drawContext.strokeStyle = "hsl(" + hue + ", 100%, 50%)";
+    drawContext.lineWidth = 2; // beware of center area
+    drawContext.stroke(); // stroke all lines at once
+    j++;
   }
 
   // Draw the time domain chart.
@@ -127,7 +142,38 @@ VisualizerSample.prototype.draw = function() {
     requestAnimFrame(this.draw.bind(this));
   }
 };
+// angle - in radians
+function getLine(cx, cy, angle, t, oRadius, iRadius) {
+  var radiusDiff = oRadius - iRadius, // calc radius diff to get max length
+    length = radiusDiff * t; // now we have the line length
 
+  return {
+    x1: cx + oRadius * Math.cos(angle), // x1 point (outer)
+    y1: cy + oRadius * Math.sin(angle), // y1 point (outer)
+    x2: cx + (oRadius - length) * Math.cos(angle), // x2 point (inner)
+    y2: cy + (oRadius - length) * Math.sin(angle) // y2 point (inner)
+  };
+}
+
+// while (angle < Math.PI * 2) {
+//   // our line function in action:
+//   line = getLine(250, 250, angle, getFFT(), 240, 50);
+//   ctx.lineWidth = 5; // beware of center area
+//    cx.stroke(); // stroke all lines at once
+
+//   ctx.moveTo(line.x1, line.y1); // add line to path
+//   ctx.lineTo(line.x2, line.y2);
+//   angle += angleStep; // get next angle
+// // }
+
+// to smooth the "FFT" random data
+function getFFT() {
+  return Math.random() * 0.16 + 0.4;
+}
+// to smooth the "FFT" random data
+function getFFT() {
+  return Math.random() * 0.16 + 0.4;
+}
 VisualizerSample.prototype.getFrequencyValue = function(freq) {
   var nyquist = context.sampleRate / 2;
   var index = Math.round((freq / nyquist) * this.freqs.length);
