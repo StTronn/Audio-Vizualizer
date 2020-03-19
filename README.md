@@ -4,4 +4,4 @@ An unique audio visualizer for browser made using [Web audio api](https://develo
 
 ![alt text](./viz.png)
 
-The project was inspired by boris smus [book]('https://github.com/borismus/webaudioapi.com').
+The project was inspired by boris smus [book](https://github.com/borismus/webaudioapi.com).
